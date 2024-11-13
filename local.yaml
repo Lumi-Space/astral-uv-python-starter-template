@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  observatory: &observatory
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      target: development
+    image: lumispace/observatory:local
+    container_name: lumispace_observatory
+    env_file:
+      - .env
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./:/usr/src/app
