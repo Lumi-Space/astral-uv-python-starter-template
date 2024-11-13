@@ -5,7 +5,7 @@ FROM python:3.13-slim-bookworm AS base
 # Set the working directory to /app
 WORKDIR /usr/src/app
 
-COPY . . 
+COPY . /usr/src/app
 
 # The installer requires curl (and certificates) to download the release archive
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates wget zsh
@@ -22,6 +22,9 @@ ENV PATH="/root/.local/bin/:$PATH"
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// #
 
 FROM base AS development
+
+# A cache mount can be used to improve performance across builds:
+ENV UV_LINK_MODE=copy
 
 # Install necessary packages: gcc, make, libc-dev, bash, curl, and openssh-client
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -50,5 +53,8 @@ RUN echo 'eval "$(uv generate-shell-completion zsh)"' >> ~/.zshrc
 
 # Enable shell completions for `uvx`
 RUN echo 'eval "$(uvx generate-shell-completion zsh)"' >> ~/.zshrc
+
+# Sync the project into a new environment, using the frozen lockfile
+RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
 # //////////////////////////////////////////////////////////////////////////////////////////////////////////////////// #
