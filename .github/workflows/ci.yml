@@ -1,0 +1,62 @@
+name: observatory/ci
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - release
+      - latest
+    paths-ignore:
+      - "__pycache__"
+      - ".pytest_cache"
+      - ".ruff_cache"
+      - 'docs/**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  ci:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout 🛎
+        uses: actions/checkout@v4
+
+      - name: Setup Environment File
+        run: |
+          touch .env
+          echo CONTAINER_NAME="lumispace_observatory" >> .env
+          echo COMPOSE_FILE="local.yaml" >> .env
+          cat .env
+
+      - name: Build the development container
+        run: |
+          make build
+
+      - name: Setup uv environment
+        run: |
+          make exec CMD="uv venv"
+
+      - name: Synchronise uv environment
+        run: |
+          make exec CMD="uv sync"
+
+      - name: Lint w/@astral/ruff
+        run: |
+          make exec CMD="./scripts/lint.sh"
+
+      - name: Format w/@astral/ruff
+        run: |
+          make exec CMD="./scripts/format.sh"
+
+      - name: Static Analysis w/mypy
+        run: |
+          make exec CMD="./scripts/typecheck.sh"

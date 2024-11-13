@@ -1,0 +1,54 @@
+name: observatory/test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+      - release
+      - latest
+    paths-ignore:
+      - "__pycache__"
+      - ".pytest_cache"
+      - ".ruff_cache"
+      - 'docs/**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout 🛎
+        uses: actions/checkout@v4
+
+      - name: Setup Environment File
+        run: |
+          touch .env
+          echo CONTAINER_NAME="lumispace_observatory" >> .env
+          echo COMPOSE_FILE="local.yaml" >> .env
+          cat .env
+
+      - name: Build the development container
+        run: |
+          make build
+
+      - name: Setup uv environment
+        run: |
+          make exec CMD="uv venv"
+
+      - name: Synchronise uv environment
+        run: |
+          make exec CMD="uv sync"
+
+      - name: Test w/pytest
+        run: |
+          make exec CMD="./scripts/test.sh"
