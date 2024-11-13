@@ -1,0 +1,8 @@
+# Disable Linguist detection for Dockerfiles
+Dockerfile* linguist-detectable=false
+
+# Disable Linguist detection for shell scripts
+*.sh linguist-detectable=false
+
+# Disable Linguist detection for Makefiles
+Makefile linguist-detectable=false
