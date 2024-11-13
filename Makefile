@@ -14,7 +14,7 @@ export
 # Build the development Docker container:
 .PHONY: build
 build:
-	docker compose --file local.yaml up --build --detach
+	docker compose --file $(COMPOSE_FILE) up --build --detach
 
 # **************************************************************************************
 
