@@ -1,6 +1,15 @@
 #!/usr/bin/env zsh
 
+# **************************************************************************************
+
+# @package        @lumispace/common
+# @license        Copyright © 2021-2025 Lumi.Space
+
+# **************************************************************************************
+
 set -euo pipefail
+
+# **************************************************************************************
 
 SCRIPT_DIR="$(cd "$(dirname "${(%):-%N}")" && pwd)"
 COMMON_SCRIPT="$SCRIPT_DIR/common.sh"
@@ -10,11 +19,15 @@ if [[ ! -f "$COMMON_SCRIPT" ]]; then
     exit 1
 fi
 
+# **************************************************************************************
+
 source "$COMMON_SCRIPT"
 
 CONFIG_FILE="mypy.ini"
 DIRECTORY="."
 LOG_FILE="mypy_type_checker.log"
+
+# **************************************************************************************
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -42,24 +55,49 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# **************************************************************************************
+
 exec > >(tee -i "$LOG_FILE") 2>&1
 
 echo "Type checking with mypy..."
 echo "Configuration file: $CONFIG_FILE"
 echo "Target directory: $DIRECTORY"
 
+# **************************************************************************************
+
 check_command "uvx"
+
+# **************************************************************************************
 
 if ! uvx mypy --version >/dev/null 2>&1; then
     error_exit "'mypy' is not available via 'uvx'. Please ensure 'mypy' is installed in your environment."
 fi
 
+# **************************************************************************************
+
 if [[ ! -f "$CONFIG_FILE" ]]; then
     error_exit "Configuration file '$CONFIG_FILE' not found in the current directory."
 fi
+
+# **************************************************************************************
+
+# Find all .py and .pyi files excluding the 'venv' directory
+PY_FILES=($(find "$DIRECTORY" -path "$DIRECTORY/.venv" -prune -o -type f \( -name "*.py" -o -name "*.pyi" \) -print))
+
+# If no Python files are found, exit gracefully
+if [[ ${#PY_FILES[@]} -eq 0 ]]; then
+    echo "No Python files found outside 'venv'. Skipping type checking."
+    exit 0
+fi
+
+# **************************************************************************************
 
 if ! uvx mypy "$DIRECTORY" --config "$CONFIG_FILE" --explicit-package-bases; then
     error_exit "Type checking failed. Please fix the issues and try again."
 fi
 
+# **************************************************************************************
+
 echo "Type checking complete. Logs are available in '$LOG_FILE'."
+
+# **************************************************************************************
