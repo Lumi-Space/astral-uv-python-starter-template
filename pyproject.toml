@@ -39,6 +39,7 @@ asyncio_default_fixture_loop_scope = ["session"]
 
 # Add your polylith bricks here, e.g., "components/observatory/common" = "observatory/common"
 [tool.polylith.bricks]
+"components/observatory/common" = "observatory/common"
 
 [tool.uv]
 dev-dependencies = ["polylith-cli"]
