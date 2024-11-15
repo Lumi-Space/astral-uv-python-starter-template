@@ -8,7 +8,12 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app
 
 # The installer requires curl (and certificates) to download the release archive
-RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates wget zsh
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    wget \
+    zsh \
+    && rm -rf /var/lib/apt/lists/*
 
 # Download the latest installer
 ADD https://astral.sh/uv/install.sh /uv-installer.sh
@@ -28,7 +33,18 @@ ENV UV_LINK_MODE=copy
 
 # Install necessary packages: gcc, make, libc-dev, bash, curl, and openssh-client
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    bash curl gcc git libc-dev make openssh-client unzip wget zsh \
+    bash \
+    curl \
+    build-essential \
+    clang \             
+    git \
+    libc-dev \
+    make \
+    openssh-client \
+    python3-setuptools \
+    unzip \
+    wget \
+    zsh \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory to /app
